@@ -9,8 +9,8 @@
   let polygon;
   let widthMarker, heightMarker, rotationMarker;
   let center = { lat: 37.7749, lng: -122.4194 }; // Default center (e.g., San Francisco)
-  let width = 90; // Initial width in meters
-  let height = 60; // Initial height in meters
+  let width = 100; // Initial width in meters
+  let height = 56; // Initial height in meters
   let rotation = 0; // Initial rotation in degrees
   const rotationDistance = 40; // Fixed distance for rotation marker in meters
 
@@ -46,13 +46,13 @@
       draggable: true,
       title: "Width (Drag to Resize)",
       icon: {
-        url: "/icons/scale-width.svg",
+        url: "/icons/scale.svg",
         scaledSize: new google.maps.Size(32, 32),
         anchor: new google.maps.Point(15, 15),
         labelOrigin: new google.maps.Point(15, 40),
       },
       label: {
-        text: "width",
+        text: "height",
         color: "#FFFFFF",
         fontWeight: "bold",
       },
@@ -68,13 +68,13 @@
       draggable: true,
       title: "Height (Drag to Resize)",
       icon: {
-        url: "/icons/scale.svg",
+        url: "/icons/scale-width.svg",
         scaledSize: new google.maps.Size(32, 32),
         anchor: new google.maps.Point(15, 15),
         labelOrigin: new google.maps.Point(15, 40),
       },
       label: {
-        text: "height",
+        text: "width",
         color: "#FFFFFF",
         fontWeight: "bold",
       },
