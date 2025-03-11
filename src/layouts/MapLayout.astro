@@ -1,0 +1,126 @@
+<script is:inline>
+  ((g) => {
+    var h,
+      a,
+      k,
+      p = "The Google Maps JavaScript API",
+      c = "google",
+      l = "importLibrary",
+      q = "__ib__",
+      m = document,
+      b = window;
+    b = b[c] || (b[c] = {});
+    var d = b.maps || (b.maps = {}),
+      r = new Set(),
+      e = new URLSearchParams(),
+      u = () =>
+        h ||
+        (h = new Promise(async (f, n) => {
+          await (a = m.createElement("script"));
+          e.set("libraries", [...r] + "");
+          for (k in g)
+            e.set(
+              k.replace(/[A-Z]/g, (t) => "_" + t[0].toLowerCase()),
+              g[k]
+            );
+          e.set("callback", c + ".maps." + q);
+          a.src = `https://maps.${c}apis.com/maps/api/js?` + e;
+          d[q] = f;
+          a.onerror = () => (h = n(Error(p + " could not load.")));
+          a.nonce = m.querySelector("script[nonce]")?.nonce || "";
+          m.head.append(a);
+        }));
+    d[l]
+      ? console.warn(p + " only loads once. Ignoring:", g)
+      : (d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)));
+  })({ key: import.meta.env.MAPS_KEY, v: "alpha" });
+</script>
+
+<main>
+  <aside>
+    <h2>🚀 About this template</h2>
+  </aside>
+  <div id="map-container">
+    <DrawingMap />
+
+    <gmp-map-3d
+      id="map"
+      mode="satellite"
+      center="40.7144, -74.0208, 900"
+      heading="122.70114510660413"
+      range="377.593743117759"
+      roll="0"
+      tilt="0"
+    >
+      <!-- <gmp-model-3d
+        position="40.7144, -74.0208, 0"
+        altitude-mode="clamp-to-ground"
+        scale="2"
+        orientation="90,-90,0"
+        src="/airdome.glb"></gmp-model-3d> -->
+
+      <gmp-polygon-3d
+        altitude-mode="relative-to-ground"
+        fill-color="rgba(255, 0, 0, 0.5)"
+        stroke-color="#0000ff"
+        stroke-width="8"
+        draggable
+        ><gmp-polygon-3d> </gmp-polygon-3d>
+
+        <gmp-polyline-3d
+          altitude-mode="relative-to-ground"
+          stroke-color="rgba(25, 102, 210, 0.75)"
+          stroke-width="10"></gmp-polyline-3d>
+      </gmp-polygon-3d>
+    </gmp-map-3d>
+
+    <script is:inline>
+      const polygon = document.querySelector("gmp-polygon-3d");
+
+      async function init() {
+        // Import the needed libraries.
+        await google.maps.importLibrary("maps3d");
+
+        polygon.outerCoordinates = [
+          { lat: 40.7144, lng: -74.0208, altitude: 1000 },
+          { lat: 40.6993, lng: -74.019, altitude: 1000 },
+          { lat: 40.7035, lng: -74.0004, altitude: 1000 },
+          { lat: 40.7144, lng: -74.0208, altitude: 1000 },
+        ];
+
+        map.addEventListener("gmp-click", () => {
+          console.log("HereHEre");
+        });
+      }
+
+      init();
+    </script>
+
+    <style>
+      gmp-map-3d {
+        margin-top: 20%;
+        width: 60%;
+        height: 60%;
+      }
+
+      main {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        height: 100%;
+        background-color: red;
+      }
+
+      aside {
+        padding: 24px;
+        flex: 1;
+        background-color: blue;
+      }
+
+      #map-container {
+        flex: 3;
+        background-color: green;
+      }
+    </style>
+  </div>
+</main>

@@ -1,0 +1,307 @@
+<div id="simplemap"></div>
+<div class="controls">
+  <button id="doneButton">Done</button>
+  <p id="result"></p>
+</div>
+
+<script is:inline>
+  let map;
+  let polygon;
+  let widthMarker, heightMarker, rotationMarker;
+  let center = { lat: 37.7749, lng: -122.4194 }; // Default center (e.g., San Francisco)
+  let width = 90; // Initial width in meters
+  let height = 60; // Initial height in meters
+  let rotation = 0; // Initial rotation in degrees
+  const rotationDistance = 40; // Fixed distance for rotation marker in meters
+
+  function initMap() {
+    map = new google.maps.Map(document.getElementById("simplemap"), {
+      center: center,
+      zoom: 17,
+      mapTypeId: google.maps.MapTypeId.SATELLITE,
+    });
+
+    // Initialize the polygon as draggable
+    updateRectangle();
+
+    // Add drag event listener to the polygon to update the center
+    polygon.addListener("dragend", () => {
+      const path = polygon.getPath().getArray();
+      const newCenterLat =
+        path.reduce((sum, point) => sum + point.lat(), 0) / 4;
+      const newCenterLng =
+        path.reduce((sum, point) => sum + point.lng(), 0) / 4;
+      center = { lat: newCenterLat, lng: newCenterLng };
+      updateOtherMarkers("none");
+    });
+
+    // Create draggable markers for resizing and rotating
+    widthMarker = new google.maps.Marker({
+      position: google.maps.geometry.spherical.computeOffset(
+        center,
+        width / 2,
+        rotation
+      ),
+      map: map,
+      draggable: true,
+      title: "Width (Drag to Resize)",
+      icon: {
+        url: "/icons/scale-width.svg",
+        scaledSize: new google.maps.Size(32, 32),
+        anchor: new google.maps.Point(15, 15),
+        labelOrigin: new google.maps.Point(15, 40),
+      },
+      label: {
+        text: "width",
+        color: "#FFFFFF",
+        fontWeight: "bold",
+      },
+    });
+
+    heightMarker = new google.maps.Marker({
+      position: google.maps.geometry.spherical.computeOffset(
+        center,
+        height / 2,
+        rotation + 90
+      ),
+      map: map,
+      draggable: true,
+      title: "Height (Drag to Resize)",
+      icon: {
+        url: "/icons/scale.svg",
+        scaledSize: new google.maps.Size(32, 32),
+        anchor: new google.maps.Point(15, 15),
+        labelOrigin: new google.maps.Point(15, 40),
+      },
+      label: {
+        text: "height",
+        color: "#FFFFFF",
+        fontWeight: "bold",
+      },
+    });
+
+    rotationMarker = new google.maps.Marker({
+      position: google.maps.geometry.spherical.computeOffset(
+        center,
+        width / 2 + rotationDistance,
+        rotation
+      ),
+      map: map,
+      draggable: true,
+      title: "Rotation (Drag to Rotate)",
+      icon: {
+        url: "/icons/rotate.svg",
+        labelOrigin: new google.maps.Point(15, 40),
+      },
+      label: {
+        text: "rotate",
+        color: "#FFFFFF",
+        fontWeight: "bold",
+      },
+    });
+
+    // Add drag event listeners for the markers
+    widthMarker.addListener("drag", () => {
+      const p = widthMarker.getPosition();
+      const leftEdge = google.maps.geometry.spherical.computeOffset(
+        center,
+        -width / 2,
+        rotation
+      ); // Current left edge
+      const distance = google.maps.geometry.spherical.computeDistanceBetween(
+        leftEdge,
+        p
+      );
+      const heading = google.maps.geometry.spherical.computeHeading(
+        leftEdge,
+        p
+      );
+
+      // Only adjust width if the marker is to the right of the left edge (along rotation angle)
+      if (Math.cos(((heading - rotation) * Math.PI) / 180) > 0) {
+        width = distance; // New width is distance from fixed left edge to marker
+        center = google.maps.geometry.spherical.computeOffset(
+          leftEdge,
+          width / 2,
+          rotation
+        ); // New center
+      }
+
+      updateRectangle();
+      updateOtherMarkers("width");
+    });
+
+    heightMarker.addListener("drag", () => {
+      // Get the current position of the height marker
+      const markerPosition = heightMarker.getPosition();
+
+      // Calculate the fixed bottom edge position
+      const bottomEdge = google.maps.geometry.spherical.computeOffset(
+        center, // Current center of the rectangle
+        -height / 2, // Offset by half the current height downward
+        rotation + 90 // Perpendicular to the rectangle’s rotation (e.g., vertical if rotation is 0)
+      );
+
+      // Compute the distance from the bottom edge to the new marker position
+      const distance = google.maps.geometry.spherical.computeDistanceBetween(
+        bottomEdge,
+        markerPosition
+      );
+
+      // Compute the heading (direction) from the bottom edge to the marker
+      const heading = google.maps.geometry.spherical.computeHeading(
+        bottomEdge,
+        markerPosition
+      );
+
+      // Calculate the angle difference between the heading and the rectangle’s perpendicular direction
+      const angleDiff = ((heading - (rotation + 90)) * Math.PI) / 180;
+
+      // Project the distance along the perpendicular direction to get the new height
+      const newHeight = distance * Math.cos(angleDiff);
+
+      // Update the height
+      height = newHeight;
+
+      // Update the center to keep the bottom edge fixed
+      center = google.maps.geometry.spherical.computeOffset(
+        bottomEdge, // Start from the fixed bottom edge
+        height / 2, // Offset upward by half the new height
+        rotation + 90 // Along the perpendicular direction
+      );
+
+      // Redraw the rectangle with the new center and height
+      updateRectangle();
+
+      // Update any other markers (e.g., width marker) if needed
+      updateOtherMarkers("height");
+    });
+
+    rotationMarker.addListener("drag", () => {
+      const p = rotationMarker.getPosition();
+      rotation = google.maps.geometry.spherical.computeHeading(center, p);
+      updateRectangle();
+      updateOtherMarkers("rotation");
+    });
+
+    // Handle the "Done" button
+    document.getElementById("doneButton").addEventListener("click", () => {
+      const path = polygon.getPath().getArray();
+      const areaM2 = google.maps.geometry.spherical.computeArea(path);
+      const areaFt2 = areaM2 * 10.7639;
+
+      const coords = path
+        .map(
+          (point) => `(${point.lat().toFixed(6)}, ${point.lng().toFixed(6)})`
+        )
+        .join("\n");
+      document.getElementById("result").innerText =
+        `Coordinates:\n${coords}\n\nArea: ${areaFt2.toFixed(2)} square feet`;
+    });
+  }
+
+  function updateRectangle() {
+    const corners = [
+      google.maps.geometry.spherical.computeOffset(
+        google.maps.geometry.spherical.computeOffset(
+          center,
+          width / 2,
+          rotation
+        ),
+        height / 2,
+        rotation + 90
+      ),
+      google.maps.geometry.spherical.computeOffset(
+        google.maps.geometry.spherical.computeOffset(
+          center,
+          width / 2,
+          rotation
+        ),
+        -height / 2,
+        rotation + 90
+      ),
+      google.maps.geometry.spherical.computeOffset(
+        google.maps.geometry.spherical.computeOffset(
+          center,
+          -width / 2,
+          rotation
+        ),
+        -height / 2,
+        rotation + 90
+      ),
+      google.maps.geometry.spherical.computeOffset(
+        google.maps.geometry.spherical.computeOffset(
+          center,
+          -width / 2,
+          rotation
+        ),
+        height / 2,
+        rotation + 90
+      ),
+    ];
+
+    if (!polygon) {
+      polygon = new google.maps.Polygon({
+        paths: corners,
+        map: map,
+        strokeColor: "#FF0000",
+        fillColor: "#FF0000",
+        fillOpacity: 0.15,
+        strokeWeight: 2,
+        draggable: true,
+      });
+    } else {
+      polygon.setPath(corners);
+    }
+  }
+
+  function updateOtherMarkers(exclude) {
+    if (exclude !== "width") {
+      widthMarker.setPosition(
+        google.maps.geometry.spherical.computeOffset(
+          center,
+          width / 2,
+          rotation
+        )
+      );
+    }
+    if (exclude !== "height") {
+      heightMarker.setPosition(
+        google.maps.geometry.spherical.computeOffset(
+          center,
+          height / 2,
+          rotation + 90
+        )
+      );
+    }
+    if (exclude !== "rotation") {
+      rotationMarker.setPosition(
+        google.maps.geometry.spherical.computeOffset(
+          center,
+          width / 2 + rotationDistance,
+          rotation
+        )
+      );
+    }
+  }
+</script>
+
+<script
+  src=`https://maps.googleapis.com/maps/api/js?key=${import.meta.env.MAPS_KEY}&libraries=geometry&callback=initMap`
+  async
+  defer></script>
+
+<style>
+  #simplemap {
+    height: 800px; /* Set a specific height */
+    width: 100%;
+  }
+  .controls {
+    margin-top: 10px;
+  }
+  button {
+    margin: 5px;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+</style>
