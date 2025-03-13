@@ -1,7 +1,7 @@
 <div id="map"></div>
 <div class="controls">
-  <button id="doneButton">Done</button>
-  <p id="result"></p>
+  <!-- <button id="doneButton">Done</button>
+  <p id="result"></p> -->
 </div>
 
 <script is:inline>
@@ -38,14 +38,30 @@
 
     updateRectangle();
 
+     // Add drag event listener to polygon
+  polygon.addListener('drag', () => {
+    const path = polygon.getPath();
+    topLeft = path.getAt(0);
+    updateOtherMarkers();
+  });
+
     // Width marker at right edge midpoint
     widthMarker = new google.maps.Marker({
       position: getRightEdgeMidpoint(),
       map: map,
       draggable: true,
       title: "Width (Drag to Resize)",
-      icon: { url: "/icons/scale-width.svg", anchor: new google.maps.Point(0, 16),labelOrigin: new google.maps.Point(15, 40), },
-      label: { text: `width`, color: "#000", fontSize: "12px", fontWeight: "bold", }
+      icon: {
+        url: "/icons/scale-width.svg",
+        anchor: new google.maps.Point(0, 16),
+        labelOrigin: new google.maps.Point(15, 40),
+      },
+      label: {
+        text: `width`,
+        color: "#000",
+        fontSize: "12px",
+        fontWeight: "bold",
+      },
     });
 
     // Height marker at bottom edge midpoint
@@ -54,13 +70,22 @@
       map: map,
       draggable: true,
       title: "Height (Drag to Resize)",
-      icon: { url: "/icons/scale.svg", anchor: new google.maps.Point(0, 16),labelOrigin: new google.maps.Point(15, 40), },
-      label: { text: `height`, color: "#000", fontSize: "12px", fontWeight: "bold", }
+      icon: {
+        url: "/icons/scale.svg",
+        anchor: new google.maps.Point(0, 16),
+        labelOrigin: new google.maps.Point(15, 40),
+      },
+      label: {
+        text: `height`,
+        color: "#000",
+        fontSize: "12px",
+        fontWeight: "bold",
+      },
     });
 
     // Rotation marker near top-right corner
     rotationMarker = new google.maps.Marker({
-      position: getBottomRight(),
+      position: getRotationMarkerPosition(),
       map: map,
       draggable: true,
       title: "Rotation (Drag to Rotate)",
@@ -274,12 +299,7 @@
    * @returns {google.maps.LatLng}
    */
   function getRotationMarkerPosition() {
-    const topRight = getTopRight();
-    return google.maps.geometry.spherical.computeOffset(
-      topRight,
-      40,
-      rotation + 90
-    );
+    return getBottomRight()
   }
 </script>
 
