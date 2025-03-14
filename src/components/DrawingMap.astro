@@ -52,8 +52,9 @@
       draggable: true,
       title: "Width (Drag to Resize)",
       icon: {
-        url: "/icons/scale-width.svg",
-        anchor: new google.maps.Point(16, 16),
+      url: "/icons/scale-width.svg",
+      anchor: new google.maps.Point(16, 16),
+      rotation: rotation,
       },
     });
 
@@ -115,33 +116,37 @@
         p
       );
       const heading = google.maps.geometry.spherical.computeHeading(topLeft, p);
-      const angleDiff = ((heading - rotation) * Math.PI) / 180;
+
+      const angleDiff = ((heading - rotation ) * Math.PI) / 180;
       const projection = distance * Math.cos(angleDiff);
+
       if (projection > 10) {
+
         // Minimum width constraint
         width = projection;
         updateRectangle();
         updateOtherMarkers("width");
+
       }
+
     });
 
     // Height adjustment (keeps top edge fixed)
     heightMarker.addListener("drag", () => {
-      const p = heightMarker.getPosition();
-      const topMid = getTopEdgeMidpoint();
-      const distance = google.maps.geometry.spherical.computeDistanceBetween(
-        topMid,
-        p
-      );
-      const heading = google.maps.geometry.spherical.computeHeading(topMid, p);
-      const angleDiff = ((heading - (rotation + 90)) * Math.PI) / 180;
-      const projection = distance * Math.cos(angleDiff);
+      const p = heightMarker.getPosition()
+      const distance = google.maps.geometry.spherical.computeDistanceBetween(topLeft, p)
+
+      const heading = google.maps.geometry.spherical.computeHeading(topLeft, p)
+
+      const angleDiff = ((heading - (rotation + 90)) * Math.PI)/180;
+      const projection =  distance * Math.cos(angleDiff)
+
       if (projection > 10) {
-        // Minimum height constraint
-        height = projection;
-        updateRectangle();
+        height = projection
+        updateRectangle()
         updateOtherMarkers("height");
       }
+
     });
 
     // Optional: Display coordinates and area
