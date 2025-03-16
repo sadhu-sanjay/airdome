@@ -1,10 +1,20 @@
-<div id="map"></div>
+---
+const mapsApiKey = import.meta.env.MAPS_KEY
+---
+
+
+<div id="map">
+  <input id="search-input" type="text" placeholder="Search for places..." />
+</div>
 <div class="controls">
   <button id="doneButton">Done</button>
   <p id="result"></p>
 </div>
+<script define:vars={mapsApiKey}>(g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})
+        ({key: mapsApiKey,v: "weekly"});</script>
 
 <script is:inline>
+
   let map;
   let polygon;
   let widthMarker, heightMarker, rotationMarker;
@@ -22,6 +32,39 @@
       zoom: 17,
       mapTypeId: google.maps.MapTypeId.SATELLITE,
     });
+    const input = document.getElementById("search-input");
+    const searchBox = new google.maps.places.SearchBox(input);
+
+    map.addListener("bounds_changed", () => {
+      searchBox.setBounds(map.getBounds());
+    });
+
+    searchBox.addListener("places_changed", () => {
+      const places = searchBox.getPlaces();
+
+      if (places.length === 0) {
+        return;
+      }
+
+      const place = places[0];
+      if (!place.geometry || !place.geometry.location) {
+        console.log("Selected place contains no geometry");
+        return;
+      }
+
+      new google.maps.Marker({
+        map: map,
+        title: place.name,
+        position: place.geometry.location,
+      });
+
+      if (place.geometry.viewport) {
+        map.fitBounds(place.geometry.viewport);
+      } else {
+        map.setCenter(place.geometry.location);
+        map.setZoom(15);
+      }
+    });
 
     // Compute initial topLeft from center
     const centerLatLng = new google.maps.LatLng(initialCenter);
@@ -36,14 +79,15 @@
       rotation + 90
     );
 
+
     updateRectangle();
 
-     // Add drag event listener to polygon
-  polygon.addListener('drag', () => {
-    const path = polygon.getPath();
-    topLeft = path.getAt(0);
-    updateOtherMarkers();
-  });
+    // Add drag event listener to polygon
+    polygon.addListener("drag", () => {
+      const path = polygon.getPath();
+      topLeft = path.getAt(0);
+      updateOtherMarkers();
+    });
 
     // Width marker at right edge midpoint
     widthMarker = new google.maps.Marker({
@@ -52,9 +96,8 @@
       draggable: true,
       title: "Width (Drag to Resize)",
       icon: {
-      url: "/icons/scale-width.svg",
-      anchor: new google.maps.Point(16, 16),
-      rotation: rotation,
+        url: "/icons/scale-width.svg",
+        anchor: new google.maps.Point(16, 16),
       },
     });
 
@@ -69,7 +112,6 @@
         anchor: new google.maps.Point(0, 16),
         labelOrigin: new google.maps.Point(15, 40),
       },
-      
     });
 
     // Rotation marker near top-right corner
@@ -82,7 +124,6 @@
         url: "/icons/rotate.svg",
         anchor: new google.maps.Point(-36, -36),
       },
-     
     });
 
     // Rotation handling
@@ -117,36 +158,35 @@
       );
       const heading = google.maps.geometry.spherical.computeHeading(topLeft, p);
 
-      const angleDiff = ((heading - rotation ) * Math.PI) / 180;
+      const angleDiff = ((heading - rotation) * Math.PI) / 180;
       const projection = distance * Math.cos(angleDiff);
 
       if (projection > 10) {
-
         // Minimum width constraint
         width = projection;
         updateRectangle();
         updateOtherMarkers("width");
-
       }
-
     });
 
     // Height adjustment (keeps top edge fixed)
     heightMarker.addListener("drag", () => {
-      const p = heightMarker.getPosition()
-      const distance = google.maps.geometry.spherical.computeDistanceBetween(topLeft, p)
+      const p = heightMarker.getPosition();
+      const distance = google.maps.geometry.spherical.computeDistanceBetween(
+        topLeft,
+        p
+      );
 
-      const heading = google.maps.geometry.spherical.computeHeading(topLeft, p)
+      const heading = google.maps.geometry.spherical.computeHeading(topLeft, p);
 
-      const angleDiff = ((heading - (rotation + 90)) * Math.PI)/180;
-      const projection =  distance * Math.cos(angleDiff)
+      const angleDiff = ((heading - (rotation + 90)) * Math.PI) / 180;
+      const projection = distance * Math.cos(angleDiff);
 
       if (projection > 10) {
-        height = projection
-        updateRectangle()
+        height = projection;
+        updateRectangle();
         updateOtherMarkers("height");
       }
-
     });
 
     // Optional: Display coordinates and area
@@ -293,14 +333,18 @@
    * @returns {google.maps.LatLng}
    */
   function getRotationMarkerPosition() {
-    return getBottomRight()
+    return getBottomRight();
   }
+
+  initMap()
 </script>
 
-<script
-  src=`https://maps.googleapis.com/maps/api/js?key=${import.meta.env.MAPS_KEY}&libraries=geometry&callback=initMap`
+  
+
+<!-- <script
+  src=`https://maps.googleapis.com/maps/api/js?key=${import.meta.env.MAPS_KEY}&libraries=places, geometry&callback=initMap`
   async
-  defer></script>
+  ></script> -->
 
 <style>
   #map {
