@@ -7,27 +7,30 @@ import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
 // import DrawingMap from "../components/DrawingMap.astro";
 import Sidebar from "../components/Sidebar.astro";
 import SearchBar from "../components/SearchBar.astro";
-const mapsApiKey = import.meta.env.MAPS_KEY
+import DrawingMap from "../components/DrawingMap.astro";
+import ThreeDMap from "../components/ThreeDMap.astro";
 ---
 
-<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-
-  <!-- <Header /> -->
-  <!-- <DrawingMap /> -->
-
-  <div id="container">
-    <aside>
-      <Sidebar />
-    </aside>
-    <main>
-      <SearchBar />
-      <!-- <DrawingMap /> -->
-      <!-- <PreviewLayout />  -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+  </head>
+  <body>
+    <!-- <Header /> -->
+    <main id="container">
+      <aside>
+        <Sidebar />
+      </aside>
+      <div id="map-container">
+        <!-- <SearchBar /> -->
+        <!-- <DrawingMap /> -->
+        <ThreeDMap />
+      </div>
     </main>
-  </div>
-
-  <!-- <Footer /> -->
-</body>
+    <!-- <Footer /> -->
+  </body>
+</html>
 
 <style>
   #container {
@@ -38,7 +41,7 @@ const mapsApiKey = import.meta.env.MAPS_KEY
   aside {
     flex: 1;
   }
-  main {
+  #map-container {
     flex: 3;
   }
 </style>
