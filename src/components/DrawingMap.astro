@@ -19,31 +19,23 @@
   const initialCenter = { lat: 37.7749, lng: -122.4194 };
 
   async function initMap() {
+    // Import required libraries
+    const { Map } = await google.maps.importLibrary("maps");
+    const { PlacesService, SearchBox } = await google.maps.importLibrary("places");
+    const { Marker } = await google.maps.importLibrary("marker");
+    const { geometry } = await google.maps.importLibrary("geometry");
 
-    await waitForGoogleMapsAPI();
-
-    async function waitForGoogleMapsAPI() {
-      return new Promise((resolve) => {
-        if (window.google && window.google.maps) {
-          resolve();
-        } else {
-          const interval = setInterval(() => {
-            if (window.google && window.google.maps) {
-              clearInterval(interval);
-              resolve();
-            }
-          }, 50); // Check every 50 milliseconds
-        }
-      });
-    }
-
-    map = new google.maps.Map(document.getElementById("map"), {
+    // Initialize the 2D map
+    map = new Map(document.getElementById("map"), {
       center: initialCenter,
       zoom: 17,
-      mapTypeId: "MAP_ID"
+      mapId: "YOUR_MAP_ID", // Replace with your Map ID
+      mapTypeId: "satellite",
     });
+
+    // Set up search box
     const input = document.getElementById("search-input");
-    const searchBox = new google.maps.places.SearchBox(input);
+    const searchBox = new SearchBox(input);
 
     map.addListener("bounds_changed", () => {
       searchBox.setBounds(map.getBounds());
@@ -51,10 +43,7 @@
 
     searchBox.addListener("places_changed", () => {
       const places = searchBox.getPlaces();
-
-      if (places.length === 0) {
-        return;
-      }
+      if (places.length === 0) return;
 
       const place = places[0];
       if (!place.geometry || !place.geometry.location) {
@@ -62,7 +51,7 @@
         return;
       }
 
-      new google.maps.Marker({
+      new Marker({
         map: map,
         title: place.name,
         position: place.geometry.location,
@@ -99,7 +88,7 @@
     });
 
     // Width marker at right edge midpoint
-    widthMarker = new google.maps.Marker({
+    widthMarker = new Marker({
       position: getRightEdgeMidpoint(),
       map: map,
       draggable: true,
@@ -111,7 +100,7 @@
     });
 
     // Height marker at bottom edge midpoint
-    heightMarker = new google.maps.Marker({
+    heightMarker = new Marker({
       position: getBottomEdgeMidpoint(),
       map: map,
       draggable: true,
@@ -123,8 +112,8 @@
       },
     });
 
-    // Rotation marker near top-right corner
-    rotationMarker = new google.maps.Marker({
+    // Rotation marker near bottom-right corner
+    rotationMarker = new Marker({
       position: getRotationMarkerPosition(),
       map: map,
       draggable: true,
@@ -153,7 +142,7 @@
       );
       const deltaRotation = newHeading - initialHeading;
       rotation += deltaRotation;
-      initialHeading = newHeading; // Update for next drag event
+      initialHeading = newHeading;
       updateRectangle();
       updateOtherMarkers("rotation");
     });
@@ -166,12 +155,10 @@
         p
       );
       const heading = google.maps.geometry.spherical.computeHeading(topLeft, p);
-
       const angleDiff = ((heading - rotation) * Math.PI) / 180;
       const projection = distance * Math.cos(angleDiff);
 
       if (projection > 10) {
-        // Minimum width constraint
         width = projection;
         updateRectangle();
         updateOtherMarkers("width");
@@ -185,9 +172,7 @@
         topLeft,
         p
       );
-
       const heading = google.maps.geometry.spherical.computeHeading(topLeft, p);
-
       const angleDiff = ((heading - (rotation + 90)) * Math.PI) / 180;
       const projection = distance * Math.cos(angleDiff);
 
@@ -198,7 +183,7 @@
       }
     });
 
-    // Optional: Display coordinates and area
+    // Display coordinates and area on button click
     document.getElementById("doneButton").addEventListener("click", () => {
       const path = polygon.getPath().getArray();
       const areaM2 = google.maps.geometry.spherical.computeArea(path);
@@ -329,16 +314,7 @@
   }
 
   /**
-   * Computes the midpoint of the top edge for height calculations.
-   * @returns {google.maps.LatLng}
-   */
-  function getTopEdgeMidpoint() {
-    const topRight = getTopRight();
-    return google.maps.geometry.spherical.interpolate(topLeft, topRight, 0.5);
-  }
-
-  /**
-   * Computes the position of the rotation marker (40 meters below top-right).
+   * Computes the position of the rotation marker (at bottom-right).
    * @returns {google.maps.LatLng}
    */
   function getRotationMarkerPosition() {
@@ -348,14 +324,11 @@
   initMap();
 </script>
 
-<!-- <script
-  src=`https://maps.googleapis.com/maps/api/js?key=${import.meta.env.MAPS_KEY}&libraries=places, geometry&callback=initMap`
-  async
-  ></script> -->
+
 
 <style>
   #map {
-    height: 100%; /* Set a specific height */
+    height: 100vh; /* Full viewport height */
     width: 100%;
   }
   .controls {

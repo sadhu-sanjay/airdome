@@ -1,47 +1,51 @@
 ---
 import BaseHead from "../components/BaseHead.astro";
-import Header from "../components/Header.astro";
-import Footer from "../components/Footer.astro";
-import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
-// import MapLayout from "../layouts/MapLayout.astro";
-// import DrawingMap from "../components/DrawingMap.astro";
-import Sidebar from "../components/Sidebar.astro";
-import SearchBar from "../components/SearchBar.astro";
 import DrawingMap from "../components/DrawingMap.astro";
-import ThreeDMap from "../components/ThreeDMap.astro";
+import Sidebar from "../components/Sidebar.astro";
+import { SITE_TITLE, SITE_DESCRIPTION } from "../consts";
+import { MAPS_KEY } from "astro:env/client";
 ---
 
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
   <head>
+    <title>Photorealistic 3D Maps in Maps JavaScript Polyline Demo</title>
+
+    <style>
+      gmp-map-3d {
+        height: 100%;
+        width: 100%;
+      }
+    </style>
+
     <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    <script is:inline define:vars={{ MAPS_KEY }}> ((g) => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set(), e = new URLSearchParams(), u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set( k.replace(/[A-Z]/g, (t) => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => (h = n(Error(p + " could not load."))); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a); })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : (d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n))); })({ key: MAPS_KEY, v: "alpha" }); </script>
   </head>
+
   <body>
-    <!-- <Header /> -->
-    <main id="container">
-      <aside>
+
+    <main
+      style=" display: flex; flex-direction: row ; height: 100%; width: 100%;"
+    >
+      <aside style="flex: 1;">
         <Sidebar />
       </aside>
-      <div id="map-container">
-        <!-- <SearchBar /> -->
-        <!-- <DrawingMap /> -->
-        <ThreeDMap />
+      <div style="flex: 3;" id="content">
+        <!-- <gmp-map-3d
+          mode="hybrid"
+          heading="25"
+          range="1500"
+          center="37.7905,-122.3989,165"
+        >
+          <gmp-polyline-3d
+            altitude-mode="relative-to-ground"
+            stroke-color="rgba(25, 102, 210, 0.75)"
+            stroke-width="10"></gmp-polyline-3d>
+        </gmp-map-3d> -->
+        <DrawingMap />
       </div>
     </main>
-    <!-- <Footer /> -->
+
+    
   </body>
 </html>
-
-<style>
-  #container {
-    display: flex;
-    width: 100%;
-    height: 100%;
-  }
-  aside {
-    flex: 1;
-  }
-  #map-container {
-    flex: 3;
-  }
-</style>
