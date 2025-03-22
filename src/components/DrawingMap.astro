@@ -38,7 +38,9 @@
       zoom: 17,
       mapId: "4504f8b37365c3d0", // Replace with your Map ID
       mapTypeId: "satellite",
-      mapTypeControl: false,
+      mapTypeControlOptions: {
+        position: google.maps.ControlPosition.BOTTOM_LEFT,
+      },
     });
 
     // Add SearchBox

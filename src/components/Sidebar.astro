@@ -1,12 +1,15 @@
-<div id="container" >
-  <h1>Sidebar</h1>
+<div id="container">
+  <h1>Airdome</h1>
+  <h6>Select your dome location</h6>
+  
+  <button id="getDataButton">Get Polygon Info</button>
+  <pre id="polygonInfo"></pre>
+
   <button
     style="padding: 12px 24px; background-color: #1E90FF; color: white; border: none; border-radius: 4px; cursor: pointer;"
   >
-    Select your property  
+    Preview Dome in 3D
   </button>
-  <button id="getDataButton">Get Polygon Info</button>
-  <pre id="polygonInfo"></pre>
 </div>
 
 <script is:inline>
@@ -25,12 +28,10 @@
   });
 </script>
 
-
-
 <style>
-    #container {
-        padding: 24px;
-        border: #1E90FF;
-        border: 2px;
-    }
-    </style>
+  #container {
+    padding: 24px;
+    border: #1e90ff;
+    border: 2px;
+  }
+</style>
