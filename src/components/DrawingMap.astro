@@ -9,8 +9,6 @@
       placeholder="Search for a place"
     />
   </div>
-  <button id="doneButton">Done</button>
-  <p id="result"></p>
 </div>
 
 <script is:inline>
@@ -196,20 +194,6 @@
         updateOtherMarkers("height");
       }
     });
-
-    // Display coordinates and area on button click
-    document.getElementById("doneButton").addEventListener("click", () => {
-      const path = polygon.getPath().getArray();
-      const areaM2 = google.maps.geometry.spherical.computeArea(path);
-      const areaFt2 = areaM2 * 10.7639;
-      const coords = path
-        .map(
-          (point) => `(${point.lat().toFixed(6)}, ${point.lng().toFixed(6)})`
-        )
-        .join("\n");
-      document.getElementById("result").innerText =
-        `Coordinates:\n${coords}\n\nArea: ${areaFt2.toFixed(2)} square feet`;
-    });
   }
 
   /**
@@ -334,6 +318,26 @@
   function getRotationMarkerPosition() {
     return getBottomRight();
   }
+
+  // Listen for a custom event to send polygon data
+  document.addEventListener("requestPolygonData", () => {
+    const path = polygon.getPath().getArray();
+    const areaM2 = google.maps.geometry.spherical.computeArea(path);
+    const areaFt2 = areaM2 * 10.7639;
+    const coords = path
+      .map((point) => `(${point.lat().toFixed(6)}, ${point.lng().toFixed(6)})`)
+      .join("\n");
+
+    const polygonData = {
+      coordinates: coords,
+      area: areaFt2.toFixed(2),
+    };
+
+    // Dispatch an event with the data
+    document.dispatchEvent(
+      new CustomEvent("polygonDataResponse", { detail: polygonData })
+    );
+  });
 
   initMap();
 </script>

@@ -5,7 +5,26 @@
   >
     Select your property  
   </button>
+  <button id="getDataButton">Get Polygon Info</button>
+  <pre id="polygonInfo"></pre>
 </div>
+
+<script is:inline>
+  const button = document.getElementById("getDataButton");
+  const infoDisplay = document.getElementById("polygonInfo");
+
+  // Request data when button is clicked
+  button.addEventListener("click", () => {
+    document.dispatchEvent(new CustomEvent("requestPolygonData"));
+  });
+
+  // Listen for the response and display it
+  document.addEventListener("polygonDataResponse", (event) => {
+    const { coordinates, area } = event.detail;
+    infoDisplay.textContent = `Coordinates:\n${coordinates}\n\nArea: ${area} sq ft`;
+  });
+</script>
+
 
 
 <style>
