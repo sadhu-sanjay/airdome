@@ -1,7 +1,14 @@
-<div id="map">
-  <input id="search-input" type="text" placeholder="Search for places..." />
-</div>
+<div id="map"></div>
+
 <div class="controls">
+  <div id="search-card" style="margin: .5rem; background-color: white;">
+    <input
+      style="padding: .8rem;"
+      id="searchBox"
+      type="text"
+      placeholder="Search for a place"
+    />
+  </div>
   <button id="doneButton">Done</button>
   <p id="result"></p>
 </div>
@@ -20,50 +27,27 @@
 
   async function initMap() {
     // Import required libraries
-    const { Map } = await google.maps.importLibrary("maps");
-    const { PlacesService, SearchBox } = await google.maps.importLibrary("places");
-    const { Marker } = await google.maps.importLibrary("marker");
-    const { geometry } = await google.maps.importLibrary("geometry");
+    const [{ Map }, { Marker }, { SearchBox }] = await Promise.all([
+      google.maps.importLibrary("maps"),
+      google.maps.importLibrary("marker"),
+      google.maps.importLibrary("places"),
+      google.maps.importLibrary("geometry"),
+    ]);
 
     // Initialize the 2D map
     map = new Map(document.getElementById("map"), {
       center: initialCenter,
       zoom: 17,
-      mapId: "YOUR_MAP_ID", // Replace with your Map ID
+      mapId: "4504f8b37365c3d0", // Replace with your Map ID
       mapTypeId: "satellite",
+      mapTypeControl: false,
     });
 
-    // Set up search box
-    const input = document.getElementById("search-input");
-    const searchBox = new SearchBox(input);
-
-    map.addListener("bounds_changed", () => {
-      searchBox.setBounds(map.getBounds());
-    });
-
-    searchBox.addListener("places_changed", () => {
-      const places = searchBox.getPlaces();
-      if (places.length === 0) return;
-
-      const place = places[0];
-      if (!place.geometry || !place.geometry.location) {
-        console.log("Selected place contains no geometry");
-        return;
-      }
-
-      new Marker({
-        map: map,
-        title: place.name,
-        position: place.geometry.location,
-      });
-
-      if (place.geometry.viewport) {
-        map.fitBounds(place.geometry.viewport);
-      } else {
-        map.setCenter(place.geometry.location);
-        map.setZoom(15);
-      }
-    });
+    // Add SearchBox
+    const input = document.getElementById("searchBox");
+    const searchCard = document.getElementById("search-card");
+    const searchBox = new google.maps.places.SearchBox(input);
+    map.controls[google.maps.ControlPosition.TOP_LEFT].push(searchCard);
 
     // Compute initial topLeft from center
     const centerLatLng = new google.maps.LatLng(initialCenter);
@@ -79,6 +63,36 @@
     );
 
     updateRectangle();
+
+    // Handle place selection from search
+    searchBox.addListener("places_changed", () => {
+      const places = searchBox.getPlaces();
+      if (places.length === 0) return;
+
+      const place = places[0];
+      if (!place.geometry || !place.geometry.location) return;
+
+      // Update map center to selected place
+      const newCenter = place.geometry.location;
+      map.setCenter(newCenter);
+
+      // Recalculate topLeft based on new center
+      const newCenterLatLng = new google.maps.LatLng(newCenter);
+      const newLeftFromCenter = google.maps.geometry.spherical.computeOffset(
+        newCenterLatLng,
+        width / 2,
+        rotation + 180
+      );
+      topLeft = google.maps.geometry.spherical.computeOffset(
+        newLeftFromCenter,
+        height / 2,
+        rotation + 90
+      );
+
+      // Update rectangle and markers
+      updateRectangle();
+      updateOtherMarkers();
+    });
 
     // Add drag event listener to polygon
     polygon.addListener("drag", () => {
@@ -324,19 +338,32 @@
   initMap();
 </script>
 
-
-
 <style>
   #map {
     height: 100vh; /* Full viewport height */
     width: 100%;
   }
-  .controls {
-    margin-top: 10px;
-  }
+
   button {
     margin: 5px;
     padding: 8px 12px;
     font-size: 14px;
+  }
+
+  #searchBox {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 8px;
+    font-size: 14px;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+  }
+
+  .controls {
+    position: relative;
   }
 </style>
