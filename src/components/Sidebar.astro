@@ -1,16 +1,33 @@
 <div id="container">
   <h1>Airdome</h1>
   <h6>Select your dome location</h6>
-  
+
+  <div>
+    <input
+      id="pac-input"
+      class="controls"
+      type="text"
+      placeholder="Enter a location"
+    />
+  </div>
+
   <pre id="polygonInfo"></pre>
 
   <button
     style="font-weight: bold; padding: 12px 24px; background-color: #1E90FF; color: white; border: none; border-radius: 4px; cursor: pointer;"
     id="toggleMapButton"
   >
-    SEE DOME 
+    SEE DOME
   </button>
 </div>
+
+<style>
+  #container {
+    padding: 24px;
+    border: #1e90ff;
+    border: 2px;
+  }
+</style>
 
 <script is:inline>
   const infoDisplay = document.getElementById("polygonInfo");
@@ -22,7 +39,9 @@
     document.dispatchEvent(
       new CustomEvent("toggleMap", { detail: { showDemo: showingDemo } })
     );
-    toggleMapButton.textContent = showingDemo ? "Show Drawing Map" : "Show Demo Map";
+    toggleMapButton.textContent = showingDemo
+      ? "Show Drawing Map"
+      : "Show Demo Map";
   });
 
   // Listen for the response and display it
@@ -30,12 +49,33 @@
     const { coordinates, area } = event.detail;
     infoDisplay.textContent = `Coordinates:\n${coordinates}\n\nArea: ${area} sq ft`;
   });
-</script>
 
-<style>
-  #container {
-    padding: 24px;
-    border: #1e90ff;
-    border: 2px;
+  /**
+   * attach autocomplete
+   */
+  async function initAutocomplete() {
+    const { Autocomplete } = await google.maps.importLibrary("places");
+    const autocomplete = new Autocomplete(
+      document.getElementById("pac-input"),
+      {
+        fields: ["geometry", "name", "place_id"],
+      }
+    );
+    autocomplete.addListener("place_changed", () => {
+      //viewer.entities.removeAll();
+      const place = autocomplete.getPlace();
+      if (!place.geometry || !place.geometry.viewport) {
+        window.alert("No viewport for input: " + place.name);
+        return;
+      }
+      placeChanged(place);
+    });
   }
-</style>
+
+
+  function placeChanged(place) {
+    document.dispatchEvent(new CustomEvent("placeChanged", { detail: place }));
+  }
+
+  initAutocomplete();
+</script>

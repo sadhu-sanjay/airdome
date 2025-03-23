@@ -6,17 +6,15 @@ import DemoMap from "../components/DemoMap.astro";
 ---
 
 <BaseLayout>
-  <main
-    style="display: flex; flex-direction: row; height: 100%; width: 100%;"
-  >
+  <main style="display: flex; flex-direction: row; height: 100%; width: 100%;">
     <aside style="flex: 1;">
       <Sidebar />
     </aside>
     <div style="flex: 3;" id="content">
-      <div id="drawing-map-container" style="display: none;">
+      <div id="drawing-map-container" style="display: block;">
         <DrawingMap />
       </div>
-      <div id="demo-map-container" style="display: block;">
+      <div id="demo-map-container" style="display: none;">
         <DemoMap />
       </div>
     </div>
@@ -25,9 +23,11 @@ import DemoMap from "../components/DemoMap.astro";
   <script is:inline>
     // Function to toggle maps
     function toggleMap(showDemo) {
-      const drawingMapContainer = document.getElementById("drawing-map-container");
+      const drawingMapContainer = document.getElementById(
+        "drawing-map-container"
+      );
       const demoMapContainer = document.getElementById("demo-map-container");
-      
+
       if (showDemo) {
         drawingMapContainer.style.display = "none";
         demoMapContainer.style.display = "block";

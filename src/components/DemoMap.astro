@@ -1,5 +1,5 @@
 ---
-import { MAPS_KEY } from 'astro:env/client'
+import { MAPS_KEY } from "astro:env/client";
 ---
 
 <style>
@@ -8,7 +8,6 @@ import { MAPS_KEY } from 'astro:env/client'
     width: 100%;
   }
 </style>
-
 
 <gmp-map-3d
   mode="hybrid"
@@ -25,6 +24,7 @@ import { MAPS_KEY } from 'astro:env/client'
 
 <script is:inline>
   const polyline = document.querySelector("gmp-polyline-3d");
+  const map3DElement = document.querySelector("gmp-map-3d");
 
   async function init() {
     // Import the needed libraries.
@@ -43,6 +43,61 @@ import { MAPS_KEY } from 'astro:env/client'
       { lat: 37.7892310309145, lng: -122.3951458683092 },
       { lat: 37.7916358762409, lng: -122.3981969390652 },
     ];
+
+    listenForPlaceChange();
+  }
+
+  const zoomToViewport = async (geometry) => {
+    const { AltitudeMode, Polyline3DElement } =
+      await google.maps.importLibrary("maps3d");
+    let viewport = geometry.viewport;
+    let locationPoints = [
+      {
+        lat: viewport.getNorthEast().lat(),
+        lng: viewport.getNorthEast().lng(),
+      },
+      {
+        lat: viewport.getSouthWest().lat(),
+        lng: viewport.getNorthEast().lng(),
+      },
+      {
+        lat: viewport.getSouthWest().lat(),
+        lng: viewport.getSouthWest().lng(),
+      },
+      {
+        lat: viewport.getNorthEast().lat(),
+        lng: viewport.getSouthWest().lng(),
+      },
+      {
+        lat: viewport.getNorthEast().lat(),
+        lng: viewport.getNorthEast().lng(),
+      },
+    ];
+    let locationPolyline = new Polyline3DElement({
+      altitudeMode: AltitudeMode.CLAMP_TO_GROUND,
+      strokeColor: "blue",
+      strokeWidth: 10,
+      coordinates: locationPoints,
+    });
+    map3DElement.append(locationPolyline);
+    console.log(locationPolyline);
+    if (map3DElement) {
+      map3DElement.center = {
+        lat: geometry.location.lat(),
+        lng: geometry.location.lng(),
+        altitude: 500,
+      };
+      map3DElement.heading = 0;
+      map3DElement.range = 1000;
+      map3DElement.tilt = 65;
+    }
+  };
+
+  function listenForPlaceChange() {
+    document.addEventListener("placeChanged", (event) => {
+      const place = event.detail;
+      zoomToViewport(place.geometry)
+    });
   }
 
   init();
