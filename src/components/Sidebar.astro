@@ -6,6 +6,7 @@
 
   <button
     style="font-weight: bold; padding: 12px 24px; background-color: #1E90FF; color: white; border: none; border-radius: 4px; cursor: pointer;"
+    id="toggleMapButton"
   >
     SEE DOME 
   </button>
@@ -13,6 +14,16 @@
 
 <script is:inline>
   const infoDisplay = document.getElementById("polygonInfo");
+  const toggleMapButton = document.getElementById("toggleMapButton");
+  let showingDemo = false;
+
+  toggleMapButton.addEventListener("click", () => {
+    showingDemo = !showingDemo;
+    document.dispatchEvent(
+      new CustomEvent("toggleMap", { detail: { showDemo: showingDemo } })
+    );
+    toggleMapButton.textContent = showingDemo ? "Show Drawing Map" : "Show Demo Map";
+  });
 
   // Listen for the response and display it
   document.addEventListener("polygonDataResponse", (event) => {

@@ -329,7 +329,6 @@
    */
 
   function sendEvent() {
-   
     const path = polygon.getPath().getArray();
     const areaM2 = google.maps.geometry.spherical.computeArea(path);
     const areaFt2 = areaM2 * 10.7639;
@@ -346,7 +345,7 @@
     document.dispatchEvent(
       new CustomEvent("polygonDataResponse", { detail: polygonData })
     );
-  };
+  }
 
   initMap();
 </script>

@@ -1,5 +1,49 @@
 ---
-import { MAPS_KEY } from "astro:env/client";
+import { MAPS_KEY } from 'astro:env/client'
 ---
 
-<script is:inline define:vars={{ MAPS_KEY }}> ((g) => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set(), e = new URLSearchParams(), u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set( k.replace(/[A-Z]/g, (t) => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => (h = n(Error(p + " could not load."))); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a); })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : (d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n))); })({ key: MAPS_KEY, v: "alpha" }); </script>
+<style>
+  gmp-map-3d {
+    height: 100dvh;
+    width: 100%;
+  }
+</style>
+
+
+<gmp-map-3d
+  mode="hybrid"
+  heading="25"
+  range="2500"
+  tilt="45"
+  center="37.7905,-122.3989,165"
+>
+  <gmp-polyline-3d
+    altitude-mode="relative-to-ground"
+    stroke-color="rgba(25, 102, 210, 0.75)"
+    stroke-width="10"></gmp-polyline-3d>
+</gmp-map-3d>
+
+<script is:inline>
+  const polyline = document.querySelector("gmp-polyline-3d");
+
+  async function init() {
+    // Import the needed libraries.
+    await google.maps.importLibrary("maps3d");
+
+    polyline.coordinates = [
+      { lat: 37.80515638571346, lng: -122.4032569467164 },
+      { lat: 37.80337073509504, lng: -122.4012878349353 },
+      { lat: 37.79925208843463, lng: -122.3976697250461 },
+      { lat: 37.7989102378512, lng: -122.3983408725656 },
+      { lat: 37.79887832784348, lng: -122.3987094864192 },
+      { lat: 37.79786443410338, lng: -122.4066878788802 },
+      { lat: 37.79549248916587, lng: -122.4032992702785 },
+      { lat: 37.78861484290265, lng: -122.4019489189814 },
+      { lat: 37.78618687561075, lng: -122.398969592545 },
+      { lat: 37.7892310309145, lng: -122.3951458683092 },
+      { lat: 37.7916358762409, lng: -122.3981969390652 },
+    ];
+  }
+
+  init();
+</script>
