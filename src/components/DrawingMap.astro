@@ -39,7 +39,7 @@
       mapId: "4504f8b37365c3d0", // Replace with your Map ID
       mapTypeId: "satellite",
       mapTypeControlOptions: {
-        position: google.maps.ControlPosition.BOTTOM_LEFT,
+        position: google.maps.ControlPosition.TOP_RIGHT,
       },
     });
 
@@ -134,7 +134,7 @@
       title: "Rotation (Drag to Rotate)",
       icon: {
         url: "/icons/rotate.svg",
-        anchor: new google.maps.Point(-36, -36),
+        anchor: new google.maps.Point(-26, -26),
       },
     });
 
@@ -231,6 +231,8 @@
     } else {
       polygon.setPath(corners);
     }
+
+    sendEvent();
   }
 
   /**
@@ -321,8 +323,13 @@
     return getBottomRight();
   }
 
-  // Listen for a custom event to send polygon data
-  document.addEventListener("requestPolygonData", () => {
+  /**
+   * send event with polygon data
+   * @returns {void}
+   */
+
+  function sendEvent() {
+   
     const path = polygon.getPath().getArray();
     const areaM2 = google.maps.geometry.spherical.computeArea(path);
     const areaFt2 = areaM2 * 10.7639;
@@ -339,7 +346,7 @@
     document.dispatchEvent(
       new CustomEvent("polygonDataResponse", { detail: polygonData })
     );
-  });
+  };
 
   initMap();
 </script>
