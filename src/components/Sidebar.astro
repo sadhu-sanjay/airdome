@@ -11,7 +11,7 @@
     />
   </div>
 
-  <pre id="polygonInfo"></pre>
+  <pre style="font-size: small;" id="polygonInfo"></pre>
 
   <button
     style="font-weight: bold; padding: 12px 24px; background-color: #1E90FF; color: white; border: none; border-radius: 4px; cursor: pointer;"
@@ -45,9 +45,10 @@
   });
 
   // Listen for the response and display it
-  document.addEventListener("polygonDataResponse", (event) => {
+  document.addEventListener("polygonUpdated", (event) => {
     const { coordinates, area } = event.detail;
-    infoDisplay.textContent = `Coordinates:\n${coordinates}\n\nArea: ${area} sq ft`;
+    // infoDisplay.textContent = `Coordinates:\n${coordinates.map(each=> (each.lat().toFixed(6), each.lat().toFixed(6) ))}\n\nArea: ${area} sq ft`;
+    infoDisplay.textContent = `Coordinates:\n$\nArea: ${area} sq ft`;
   });
 
   /**

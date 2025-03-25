@@ -1,5 +1,35 @@
-<div id="map"></div>
 
+<style>
+  #map {
+    height: 100vh; /* Full viewport height */
+    width: 100%;
+  }
+
+  button {
+    margin: 5px;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  #searchBox {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 8px;
+    font-size: 14px;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+  }
+
+  .controls {
+    position: relative;
+  }
+</style>
+
+<div id="map"></div>
 <div class="controls">
   <div id="search-card" style="margin: .5rem; background-color: white;">
     <input
@@ -50,7 +80,7 @@
     map.controls[google.maps.ControlPosition.TOP_LEFT].push(searchCard);
 
     // Compute initial topLeft from center
-    const centerLatLng = new google.maps.LatLng(initialCenter);
+    let centerLatLng = new google.maps.LatLng(initialCenter);
     const leftFromCenter = google.maps.geometry.spherical.computeOffset(
       centerLatLng,
       width / 2,
@@ -158,7 +188,7 @@
       rotation += deltaRotation;
       initialHeading = newHeading;
       updateRectangle();
-      updateOtherMarkers("rotation");
+      updateOtherMarkers("");
     });
 
     // Width adjustment (keeps left edge fixed)
@@ -175,7 +205,7 @@
       if (projection > 10) {
         width = projection;
         updateRectangle();
-        updateOtherMarkers("width");
+        updateOtherMarkers("");
       }
     });
 
@@ -193,9 +223,10 @@
       if (projection > 10) {
         height = projection;
         updateRectangle();
-        updateOtherMarkers("height");
+        updateOtherMarkers("");
       }
     });
+
   }
 
   /**
@@ -316,6 +347,17 @@
   }
 
   /**
+   * @returns {google.maps.LatLng}
+   */
+  function getPolygonCenter() {
+    return google.maps.geometry.spherical.interpolate(
+      topLeft,
+      getBottomRight(),
+      0.5
+    );
+  }
+
+  /**
    * Computes the position of the rotation marker (at bottom-right).
    * @returns {google.maps.LatLng}
    */
@@ -329,6 +371,7 @@
    */
 
   function sendEvent() {
+
     const path = polygon.getPath().getArray();
     const areaM2 = google.maps.geometry.spherical.computeArea(path);
     const areaFt2 = areaM2 * 10.7639;
@@ -336,46 +379,33 @@
       .map((point) => `(${point.lat().toFixed(6)}, ${point.lng().toFixed(6)})`)
       .join("\n");
 
+
     const polygonData = {
-      coordinates: coords,
+      center: getPolygonCenter().toJSON(),
+      coordinates: polygon.getPath().getArray(),
       area: areaFt2.toFixed(2),
     };
 
     // Dispatch an event with the data
     document.dispatchEvent(
-      new CustomEvent("polygonDataResponse", { detail: polygonData })
+      new CustomEvent("polygonUpdated", { detail: polygonData })
     );
   }
 
+  function listenForPlaceChange() {
+    document.addEventListener("placeChanged", (event) => {
+      const place = event.detail;
+      const newCenter = place.geometry.location;
+
+      map.panTo(newCenter);
+      topLeft = newCenter
+      updateRectangle()
+      updateOtherMarkers()
+    });
+  }
+
   initMap();
+  listenForPlaceChange()
+
 </script>
 
-<style>
-  #map {
-    height: 100vh; /* Full viewport height */
-    width: 100%;
-  }
-
-  button {
-    margin: 5px;
-    padding: 8px 12px;
-    font-size: 14px;
-  }
-
-  #searchBox {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    padding: 8px;
-    font-size: 14px;
-    width: 300px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-  }
-
-  .controls {
-    position: relative;
-  }
-</style>

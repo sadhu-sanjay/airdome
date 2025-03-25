@@ -7,14 +7,14 @@ import DemoMap from "../components/DemoMap.astro";
 
 <BaseLayout>
   <main style="display: flex; flex-direction: row; height: 100%; width: 100%;">
-    <aside style="flex: 1;">
+    <!-- <aside style="flex: 1;">
       <Sidebar />
-    </aside>
-    <div style="flex: 3;" id="content">
-      <div id="drawing-map-container" style="display: block;">
+    </aside> -->
+    <div style="flex: 1; display: flex; ; background-color: red" id="content">
+      <div id="drawing-map-container" style="background-color: blue; flex: 1;">
         <DrawingMap />
       </div>
-      <div id="demo-map-container" style="display: none;">
+      <div id="demo-map-container" style="background-color: green;flex: 1;">
         <DemoMap />
       </div>
     </div>
