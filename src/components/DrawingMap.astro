@@ -128,6 +128,7 @@
     polygon.addListener("drag", () => {
       const path = polygon.getPath();
       topLeft = path.getAt(0);
+      updateRectangle();
       updateOtherMarkers();
     });
 
