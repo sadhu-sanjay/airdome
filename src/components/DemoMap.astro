@@ -17,13 +17,15 @@
     fill-color="rgba(255, 0, 0, 0.5)"
     stroke-color="#0000ff"
     stroke-width="8"
-    extruded>
+    extruded
+  >
   </gmp-polygon-3d>
 </gmp-map-3d>
 
 <script is:inline>
   const map3DElement = document.querySelector("gmp-map-3d");
   const polygon3d = document.querySelector("gmp-polygon-3d");
+  let model;
 
   async function init() {
     // Import the needed libraries.
@@ -35,6 +37,8 @@
       { lat: 40.7035, lng: -74.0004, altitude: 1000 },
       { lat: 40.7144, lng: -74.0208, altitude: 1000 },
     ];
+
+    place3dObject();
   }
 
   const zoomToViewport = async (geometry) => {
@@ -69,7 +73,7 @@
       },
     ];
 
-    polygon3d.outerCoordinates =  locationPoints
+    polygon3d.outerCoordinates = locationPoints;
 
     if (map3DElement) {
       map3DElement.flyCameraTo({
@@ -89,7 +93,11 @@
   };
 
   function updatePolygon(polygon) {
-    polygon3d.outerCoordinates = polygon.coordinates.map(each => ({ lat: each.lat(), lng: each.lng(), altitude: 5 }));
+    polygon3d.outerCoordinates = polygon.coordinates.map((each) => ({
+      lat: each.lat(),
+      lng: each.lng(),
+      altitude: 5,
+    }));
 
     map3DElement.flyCameraTo({
       endCamera: {
@@ -107,7 +115,6 @@
   }
 
   function listenForPlaceChange() {
-
     document.addEventListener("placeChanged", (event) => {
       const place = event.detail;
       zoomToViewport(place.geometry);
@@ -117,9 +124,27 @@
       const polygon = event.detail;
 
       setTimeout(() => {
-        updatePolygon(polygon)
+        updatePolygon(polygon);
+        place3dObject(polygon.center);
       }, 1000);
     });
+  }
+
+  async function place3dObject(center) {
+    const { Model3DElement } = await google.maps.importLibrary("maps3d");
+
+    if (!model) {
+      model = new Model3DElement({
+        src: "./warehouse.glb",
+        position: center,
+        altitudeMode: "RELATIVE_TO_GROUND",
+        orientation: { tilt: 270, roll: 90 },
+        scale: 1,
+      });
+     map3DElement.append(model);
+    }else {
+      model.position = center;
+    }
   }
 
   init();
