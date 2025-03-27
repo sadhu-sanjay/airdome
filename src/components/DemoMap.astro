@@ -99,19 +99,31 @@
       altitude: 5,
     }));
 
-    map3DElement.flyCameraTo({
-      endCamera: {
-        center: {
-          lat: polygon.center.lat,
-          lng: polygon.center.lng,
-          altitude: 50,
-        },
-        heading: 0,
-        tilt: 53.5,
-        range: 250,
+    const flyToCamera = {
+      center: {
+        lat: polygon.center.lat,
+        lng: polygon.center.lng,
+        altitude: 200,
       },
-      durationMillis: 1000,
+      heading: 0,
+      tilt: 53.5,
+      range: 800,
+    };
+
+    map3DElement.flyCameraTo({
+      endCamera: flyToCamera,
+      durationMillis: 5000,
     });
+
+    map3DElement.addEventListener("gmp-animationend", () => {
+      map3DElement.flyCameraAround({
+        camera: flyToCamera,
+        durationMillis: 60000,
+        rounds: 1
+      });
+    }, { once: true });
+
+
   }
 
   function listenForPlaceChange() {
@@ -125,25 +137,27 @@
 
       setTimeout(() => {
         updatePolygon(polygon);
-        place3dObject(polygon.center);
+        place3dObject(polygon);
       }, 1000);
     });
   }
 
-  async function place3dObject(center) {
+  async function place3dObject(polygon) {
     const { Model3DElement } = await google.maps.importLibrary("maps3d");
+    const position = polygon.coordinates[3];
 
     if (!model) {
       model = new Model3DElement({
-        src: "./office_building.glb",
-        position: center,
+        src: "./airdome.glb",
+        position: position,
         altitudeMode: "RELATIVE_TO_GROUND",
-        orientation: { tilt: -90, roll: 0 },
-        scale: 1,
+        orientation: { tilt: -90, roll: polygon.rotation  },
+        scale: 0.1,
       });
-     map3DElement.append(model);
-    }else {
-      model.position = center;
+      map3DElement.append(model);
+    } else {
+      model.position = position;
+      model.orientation = { tilt: -90, roll: polygon.rotation };
     }
   }
 
