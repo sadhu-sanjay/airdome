@@ -14,10 +14,8 @@
 >
   <gmp-polygon-3d
     altitude-mode="relative-to-ground"
-    fill-color="rgba(255, 0, 0, 0.5)"
     stroke-color="#0000ff"
-    stroke-width="8"
-    extruded
+    stroke-width="4"
   >
   </gmp-polygon-3d>
 </gmp-map-3d>
@@ -37,8 +35,6 @@
       { lat: 40.7035, lng: -74.0004, altitude: 1000 },
       { lat: 40.7144, lng: -74.0208, altitude: 1000 },
     ];
-
-    place3dObject();
   }
 
   const zoomToViewport = async (geometry) => {
@@ -96,18 +92,18 @@
     polygon3d.outerCoordinates = polygon.coordinates.map((each) => ({
       lat: each.lat(),
       lng: each.lng(),
-      altitude: 5,
+      altitude: 2,
     }));
 
     const flyToCamera = {
       center: {
         lat: polygon.center.lat,
         lng: polygon.center.lng,
-        altitude: 200,
+        altitude: 170,
       },
       heading: 0,
       tilt: 53.5,
-      range: 800,
+      range: 710,
     };
 
     map3DElement.flyCameraTo({
@@ -123,7 +119,6 @@
       });
     }, { once: true });
 
-
   }
 
   function listenForPlaceChange() {
@@ -133,18 +128,19 @@
     });
 
     document.addEventListener("polygonUpdated", (event) => {
+      if (!event.detail) return;
       const polygon = event.detail;
 
       setTimeout(() => {
         updatePolygon(polygon);
         place3dObject(polygon);
-      }, 1000);
+      }, 200);
     });
   }
 
   async function place3dObject(polygon) {
     const { Model3DElement } = await google.maps.importLibrary("maps3d");
-    const position = polygon.coordinates[3];
+    const position = polygon.offsetCenter;
 
     if (!model) {
       model = new Model3DElement({
@@ -152,7 +148,7 @@
         position: position,
         altitudeMode: "RELATIVE_TO_GROUND",
         orientation: { tilt: -90, roll: polygon.rotation  },
-        scale: 0.1,
+        scale: 0.05,
       });
       map3DElement.append(model);
     } else {
