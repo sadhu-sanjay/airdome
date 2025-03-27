@@ -14,8 +14,8 @@
 >
   <gmp-polygon-3d
     altitude-mode="relative-to-ground"
-    stroke-color="#0000ff"
-    stroke-width="4"
+    stroke-color="transparent"
+    stroke-width="1"
   >
   </gmp-polygon-3d>
 </gmp-map-3d>
@@ -140,7 +140,7 @@
 
   async function place3dObject(polygon) {
     const { Model3DElement } = await google.maps.importLibrary("maps3d");
-    const position = polygon.offsetCenter;
+    const position = polygon.coordinates[3];
 
     if (!model) {
       model = new Model3DElement({
