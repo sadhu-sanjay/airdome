@@ -1,16 +1,17 @@
-
-
 <div id="map"></div>
 
-<div style="display: none">
-  Search for a locaiton  here 
-  <input
-  style="padding: 1.5rem; margin-top: 2rem; font-size: 1rem;"
-    id="pac-input"
-    class="controls"
-    type="text"
-    placeholder="Enter a location"
-  />
+
+<div class="pac-card" id="pac-card">
+  <div id="title">Navigate to a place</div>
+  <div id="pac-container">
+    <input
+      class="pac-input"
+      type="text"
+      id="pac-input"
+      name="pac-input"
+      placeholder="Enter a location..."
+    />
+  </div>
 </div>
 
 <style>
@@ -45,6 +46,62 @@
 
   .controls:focus {
     border-color: #4d90fe;
+  }
+
+  .pac-controls {
+    display: inline-block;
+    padding: 0px 11px;
+  }
+  .pac-controls label {
+    font-family: Roboto;
+    font-size: 13px;
+    font-weight: 300;
+  }
+  .pac-card {
+    background-color: #fff;
+    border: 0;
+    border-radius: .5rem;
+    box-shadow: 0 1px 4px -1px rgba(0, 0, 0, 0.3);
+    margin: 10px;
+    padding: 0 0.5em;
+    font:
+      400 18px Roboto,
+      Arial,
+      sans-serif;
+    overflow: hidden;
+    font-family: Roboto;
+    padding: 0;
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    z-index: 1000;
+  }
+  #pac-container {
+    padding-top: 12px;
+    padding-bottom: 12px;
+    margin-right: 12px;
+    border-radius: 2px;
+  }
+  #pac-input {
+    background-color: #fff;
+    font-family: Roboto;
+    font-size: 15px;
+    font-weight: 300;
+    margin-left: 12px;
+    padding: 0.5rem 1rem;
+    text-overflow: ellipsis;
+    width: 400px;
+    border-radius: .5rem;
+  }
+  #pac-input:focus {
+    border-color: #4d90fe;
+  }
+  #title {
+    color: #fff;
+    background-color: #4d90fe;
+    font-size: 14px;
+    font-weight: 500;
+    padding: .8rem .8rem;
   }
 </style>
 <script is:inline>
@@ -81,7 +138,6 @@
         position: google.maps.ControlPosition.TOP_RIGHT,
       },
     });
-    await initAutoComplete();
 
     topLeft = google.maps.geometry.spherical.computeOffset(
       map.getCenter(),
@@ -369,18 +425,27 @@
     });
   }
 
-  async function initAutoComplete() {
-    const input = document.getElementById("pac-input");
-    // Specify just the place data fields that you need.
-    const autocomplete = new google.maps.places.Autocomplete(input, {
-      fields: ["place_id", "geometry", "formatted_address", "name"],
-    });
-
-    autocomplete.bindTo("bounds", map);
-    map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+  function debouncer(fn, delay) {
+    let timer;
+    return function () {
+      const context = this;
+      const args = arguments;
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        fn.apply(context, args);
+      }, delay);
+    };
+  }
+  async function initAutocomplete() {
+    const { Autocomplete } = await google.maps.importLibrary("places");
+    const autocomplete = new Autocomplete(
+      document.getElementById("pac-input"),
+      {
+        fields: ["geometry", "name", "place_id"],
+      }
+    );
 
     autocomplete.addListener("place_changed", () => {
-
       const place = autocomplete.getPlace();
 
       if (!place.geometry || !place.geometry.location) {
@@ -402,22 +467,10 @@
 
       updateRectangle();
       updateOtherMarkers();
-
     });
-  }
-
-  function debouncer(fn, delay) {
-    let timer;
-    return function () {
-      const context = this;
-      const args = arguments;
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        fn.apply(context, args);
-      }, delay);
-    };
   }
 
   initMap();
   listenForPlaceChange();
+  initAutocomplete();
 </script>
