@@ -96,7 +96,7 @@
     polygon3d.outerCoordinates = polygon.coordinates.map((each) => ({
       lat: each.lat(),
       lng: each.lng(),
-      altitude: 0,
+      altitude: 5,
     }));
 
     map3DElement.flyCameraTo({
@@ -107,8 +107,8 @@
           altitude: 100,
         },
         heading: 0,
-        tilt: 43.5,
-        range: 400,
+        tilt: 53.5,
+        range: 200,
       },
       durationMillis: 1000,
     });
@@ -135,10 +135,10 @@
 
     if (!model) {
       model = new Model3DElement({
-        src: "./warehouse.glb",
+        src: "./office_building.glb",
         position: center,
         altitudeMode: "RELATIVE_TO_GROUND",
-        orientation: { tilt: 270, roll: 90 },
+        orientation: { tilt: -90, roll: 0 },
         scale: 1,
       });
      map3DElement.append(model);
