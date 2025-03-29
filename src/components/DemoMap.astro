@@ -14,149 +14,151 @@
 >
   <gmp-polygon-3d
     altitude-mode="relative-to-ground"
-    stroke-color="transparent"
-    stroke-width="1"
-  >
-  </gmp-polygon-3d>
-</gmp-map-3d>
+    fill-color="rgba(255, 0, 0, 0.1)"
+    stroke-width="3"
+    stroke-color="rgba(0, 0, 255, 0.5)"
+    ><gmp-polygon-3d> 
 
-<script is:inline>
-  const map3DElement = document.querySelector("gmp-map-3d");
-  const polygon3d = document.querySelector("gmp-polygon-3d");
-  let model;
+</gmp-polygon-3d>
 
-  async function init() {
-    // Import the needed libraries.
-    await google.maps.importLibrary("maps3d");
+    <script is:inline>
+      const map3DElement = document.querySelector("gmp-map-3d");
+      const polygon3d = document.querySelector("gmp-polygon-3d");
+      let model;
 
-    polygon3d.outerCoordinates = [
-      { lat: 40.7144, lng: -74.0208, altitude: 1000 },
-      { lat: 40.6993, lng: -74.019, altitude: 1000 },
-      { lat: 40.7035, lng: -74.0004, altitude: 1000 },
-      { lat: 40.7144, lng: -74.0208, altitude: 1000 },
-    ];
-  }
+      async function init() {
+        // Import the needed libraries.
+        await google.maps.importLibrary("maps3d");
 
-  const zoomToViewport = async (geometry) => {
-    const { AltitudeMode, Polyline3DElement, Polygon3dElement } =
-      await google.maps.importLibrary("maps3d");
-    let viewport = geometry.viewport;
-    let locationPoints = [
-      {
-        lat: viewport.getNorthEast().lat(),
-        lng: viewport.getNorthEast().lng(),
-        altitude: 100,
-      },
-      {
-        lat: viewport.getSouthWest().lat(),
-        lng: viewport.getNorthEast().lng(),
-        altitude: 100,
-      },
-      {
-        lat: viewport.getSouthWest().lat(),
-        lng: viewport.getSouthWest().lng(),
-        altitude: 100,
-      },
-      {
-        lat: viewport.getNorthEast().lat(),
-        lng: viewport.getSouthWest().lng(),
-        altitude: 100,
-      },
-      {
-        lat: viewport.getNorthEast().lat(),
-        lng: viewport.getNorthEast().lng(),
-        altitude: 100,
-      },
-    ];
+        polygon3d.outerCoordinates = [
+          { lat: 40.7144, lng: -74.0208, altitude: 1000 },
+          { lat: 40.6993, lng: -74.019, altitude: 1000 },
+          { lat: 40.7035, lng: -74.0004, altitude: 1000 },
+          { lat: 40.7144, lng: -74.0208, altitude: 1000 },
+        ];
+      }
 
-    polygon3d.outerCoordinates = locationPoints;
-
-    if (map3DElement) {
-      map3DElement.flyCameraTo({
-        endCamera: {
-          center: {
-            lat: viewport.getCenter().lat(),
-            lng: viewport.getCenter().lng(),
+      const zoomToViewport = async (geometry) => {
+        const { AltitudeMode, Polyline3DElement, Polygon3dElement } =
+          await google.maps.importLibrary("maps3d");
+        let viewport = geometry.viewport;
+        let locationPoints = [
+          {
+            lat: viewport.getNorthEast().lat(),
+            lng: viewport.getNorthEast().lng(),
             altitude: 100,
           },
+          {
+            lat: viewport.getSouthWest().lat(),
+            lng: viewport.getNorthEast().lng(),
+            altitude: 100,
+          },
+          {
+            lat: viewport.getSouthWest().lat(),
+            lng: viewport.getSouthWest().lng(),
+            altitude: 100,
+          },
+          {
+            lat: viewport.getNorthEast().lat(),
+            lng: viewport.getSouthWest().lng(),
+            altitude: 100,
+          },
+          {
+            lat: viewport.getNorthEast().lat(),
+            lng: viewport.getNorthEast().lng(),
+            altitude: 100,
+          },
+        ];
+
+        polygon3d.outerCoordinates = locationPoints;
+
+        if (map3DElement) {
+          map3DElement.flyCameraTo({
+            endCamera: {
+              center: {
+                lat: viewport.getCenter().lat(),
+                lng: viewport.getCenter().lng(),
+                altitude: 100,
+              },
+              heading: 0,
+              tilt: 67.5,
+              range: 1000,
+            },
+            durationMillis: 5000,
+          });
+        }
+      };
+
+      function updatePolygon(polygon) {
+        polygon3d.outerCoordinates = polygon.coordinates.map((each) => ({
+          lat: each.lat(),
+          lng: each.lng(),
+          altitude: 2,
+        }));
+
+        const flyToCamera = {
+          center: {
+            lat: polygon.center.lat,
+            lng: polygon.center.lng,
+            altitude: 170,
+          },
           heading: 0,
-          tilt: 67.5,
-          range: 1000,
-        },
-        durationMillis: 5000,
-      });
-    }
-  };
+          tilt: 53.5,
+          range: 710,
+        };
 
-  function updatePolygon(polygon) {
-    polygon3d.outerCoordinates = polygon.coordinates.map((each) => ({
-      lat: each.lat(),
-      lng: each.lng(),
-      altitude: 2,
-    }));
+        map3DElement.flyCameraTo({
+          endCamera: flyToCamera,
+          durationMillis: 5000,
+        });
 
-    const flyToCamera = {
-      center: {
-        lat: polygon.center.lat,
-        lng: polygon.center.lng,
-        altitude: 170,
-      },
-      heading: 0,
-      tilt: 53.5,
-      range: 710,
-    };
+        // map3DElement.addEventListener("gmp-animationend", () => {
+        //   map3DElement.flyCameraAround({
+        //     camera: flyToCamera,
+        //     durationMillis: 60000,
+        //     rounds: 1
+        //   });
+        // }, { once: true });
+      }
 
-    map3DElement.flyCameraTo({
-      endCamera: flyToCamera,
-      durationMillis: 5000,
-    });
+      function listenForPlaceChange() {
+        document.addEventListener("placeChanged", (event) => {
+          const place = event.detail;
+          zoomToViewport(place.geometry);
+        });
 
-    map3DElement.addEventListener("gmp-animationend", () => {
-      map3DElement.flyCameraAround({
-        camera: flyToCamera,
-        durationMillis: 60000,
-        rounds: 1
-      });
-    }, { once: true });
+        document.addEventListener("polygonUpdated", (event) => {
+          if (!event.detail) return;
+          const polygon = event.detail;
 
-  }
+          setTimeout(() => {
+            updatePolygon(polygon);
+            place3dObject(polygon);
+          }, 200);
+        });
+      }
 
-  function listenForPlaceChange() {
-    document.addEventListener("placeChanged", (event) => {
-      const place = event.detail;
-      zoomToViewport(place.geometry);
-    });
+      async function place3dObject(polygon) {
+        const { Model3DElement } = await google.maps.importLibrary("maps3d");
+        const position = polygon.coordinates[3];
 
-    document.addEventListener("polygonUpdated", (event) => {
-      if (!event.detail) return;
-      const polygon = event.detail;
+        if (!model) {
+          model = new Model3DElement({
+            src: "./airdome.glb",
+            position: position,
+            altitudeMode: "RELATIVE_TO_GROUND",
+            orientation: { tilt: -90, roll: polygon.rotation },
+            scale: 0.05,
+          });
+          map3DElement.append(model);
+        } else {
+          model.position = position;
+          model.orientation = { tilt: -90, roll: polygon.rotation };
+        }
+      }
 
-      setTimeout(() => {
-        updatePolygon(polygon);
-        place3dObject(polygon);
-      }, 200);
-    });
-  }
-
-  async function place3dObject(polygon) {
-    const { Model3DElement } = await google.maps.importLibrary("maps3d");
-    const position = polygon.coordinates[3];
-
-    if (!model) {
-      model = new Model3DElement({
-        src: "./airdome.glb",
-        position: position,
-        altitudeMode: "RELATIVE_TO_GROUND",
-        orientation: { tilt: -90, roll: polygon.rotation  },
-        scale: 0.05,
-      });
-      map3DElement.append(model);
-    } else {
-      model.position = position;
-      model.orientation = { tilt: -90, roll: polygon.rotation };
-    }
-  }
-
-  init();
-  listenForPlaceChange();
-</script>
+      init();
+      listenForPlaceChange();
+    </script>
+  </gmp-polygon-3d></gmp-map-3d
+>
