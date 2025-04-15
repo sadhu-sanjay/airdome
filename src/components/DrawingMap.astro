@@ -1,6 +1,5 @@
 <div id="map"></div>
 
-
 <div class="pac-card" id="pac-card">
   <div id="title">Navigate to a place</div>
   <div id="pac-container">
@@ -60,7 +59,7 @@
   .pac-card {
     background-color: #fff;
     border: 0;
-    border-radius: .3rem;
+    border-radius: 0.3rem;
     box-shadow: 0 1px 4px -1px rgba(0, 0, 0, 0.3);
     margin: 10px;
     padding: 0 0.5em;
@@ -91,7 +90,7 @@
     padding: 0.5rem 1rem;
     text-overflow: ellipsis;
     width: 400px;
-    border-radius: .3rem;
+    border-radius: 0.3rem;
   }
   #pac-input:focus {
     border-color: #4d90fe;
@@ -101,7 +100,7 @@
     background-color: #4d90fe;
     font-size: 14px;
     font-weight: 500;
-    padding: .8rem .8rem;
+    padding: 0.8rem 0.8rem;
   }
 </style>
 <script is:inline>
@@ -129,7 +128,7 @@
     map = new Map(document.getElementById("map"), {
       center: initialCenter,
       zoom: 17,
-      mapId: "4504f8b37365c3d0", // Replace with your Map ID
+      mapId: "40394b47467f8578", // Replace with your Map ID
       mapTypeId: google.maps.MapTypeId.SATELLITE,
       streetViewControl: false,
       fullscreenControl: false,
@@ -401,7 +400,6 @@
       .map((point) => `(${point.lat().toFixed(6)}, ${point.lng().toFixed(6)})`)
       .join("\n");
 
-    
     const polygonData = {
       center: getPolygonCenter().toJSON(),
       rotation: rotation - 90, // -90 to send the true rotation to send the true done by user
